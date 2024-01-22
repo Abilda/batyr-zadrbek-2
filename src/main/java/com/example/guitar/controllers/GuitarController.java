@@ -1,5 +1,6 @@
 package com.example.guitar.controllers;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.example.guitar.dto.SortDTO;
@@ -45,6 +46,21 @@ public class GuitarController {
             //TODO: add logging
         }
         return new ResponseEntity<>(guitar, HttpStatus.OK);
+    }
+
+    @GetMapping("/getdetailedinfolist")
+    public ResponseEntity<List<Guitar>> getDetailedInfo(@PathParam("id")List<Long> ids) {
+        List<Guitar> guitars = new ArrayList<>();
+        for (Long id : ids) {
+            Guitar guitar = new Guitar();
+            try {
+                guitar = guitarService.getById(id);
+                guitars.add(guitar);
+            } catch (Exception e) {
+                //TODO: add logging
+            }
+        }
+        return new ResponseEntity<>(guitars, HttpStatus.OK);
     }
 
     @PostMapping("/sort")
