@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -49,7 +50,7 @@ public class GuitarController {
     }
 
     @GetMapping("/getdetailedinfolist")
-    public ResponseEntity<List<Guitar>> getDetailedInfo(@PathParam("id")List<Long> ids) {
+    public ResponseEntity<List<Guitar>> getDetailedInfo(@RequestParam List<Long> ids) {
         List<Guitar> guitars = new ArrayList<>();
         for (Long id : ids) {
             Guitar guitar = new Guitar();
