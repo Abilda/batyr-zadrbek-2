@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/guitars")
+@CrossOrigin
 public class GuitarController {
     @Autowired
     private GuitarService guitarService;
@@ -31,13 +32,11 @@ public class GuitarController {
     }
 
     @GetMapping("/getall")
-    @CrossOrigin(origins = "http://localhost:3003")
     public ResponseEntity<List<Guitar>> getAll() {
         return new ResponseEntity<>(guitarService.getAll(), HttpStatus.OK);
     }
 
     @GetMapping("/getdetailedinfo")
-    @CrossOrigin(origins = "http://localhost:3003")
     public ResponseEntity<Guitar> getDetailedInfo(@PathParam("id")Long id) {
         System.out.println("Id is " + id);
         Guitar guitar = new Guitar();
@@ -76,7 +75,6 @@ public class GuitarController {
     }
 
     @PostMapping("/create")
-    @CrossOrigin
     public ResponseEntity<Guitar> create(@RequestBody Guitar guitar) {
         return new ResponseEntity<>(guitarService.create(guitar), HttpStatus.OK);
     }
