@@ -96,6 +96,7 @@ public class GuitarController {
     @GetMapping("/getall1")
     public ResponseEntity<List<Guitar>> getall(@PathParam("sort")String sortEnum,
                                                @PathParam("pageSize")Integer pageSize, @PathParam("after")Integer after) {
+        pageSize = Math.min(pageSize, guitarService.getAll().size());
         List<Guitar> allGuitars = guitarService.getAll().subList(0, pageSize);
         System.out.println("Was here");
         return new ResponseEntity<>(allGuitars, HttpStatus.OK);
@@ -104,7 +105,9 @@ public class GuitarController {
     @GetMapping("/getall2")
     public ResponseEntity<List<Guitar>> test(@PathParam("sort")String sortEnum,
                                              @PathParam("pageSize")String pageSize, @PathParam("after")String after) {
-        List<Guitar> allGuitars = guitarService.getAll().subList(0, Integer.parseInt(pageSize));
+        Integer size = Integer.parseInt(pageSize);
+        size = Math.min(size, guitarService.getAll().size());
+        List<Guitar> allGuitars = guitarService.getAll().subList(0, size);
         System.out.println("Was here 2");
         return new ResponseEntity<>(allGuitars, HttpStatus.OK);
     }
