@@ -3,6 +3,7 @@ package com.example.guitar.controllers;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.example.guitar.dto.GetAllDTO;
 import com.example.guitar.dto.GuitarDTO;
 import com.example.guitar.dto.SortDTO;
 import com.example.guitar.models.Guitar;
@@ -38,8 +39,15 @@ public class GuitarController {
     }
 
     @GetMapping("/getall")
-    public ResponseEntity<List<GuitarDTO>> getAll() {
+    public ResponseEntity<GetAllDTO> getAll(@PathParam("pageSize")Integer pageSize, @PathParam("after")Integer after) {
+        GetAllDTO response = new GetAllDTO();
         List<Guitar> guitars = guitarService.getAll();
+        if (after == null)
+            after = 0;
+        if (pageSize == null)
+            pageSize = 10;
+        after = Math.min(after, guitars.size());
+        guitars = guitars.subList(after, Math.min(guitars.size(), after + pageSize));
         List<GuitarDTO> guitarInfos = new ArrayList<>();
         for (Guitar guitar : guitars) {
             GuitarDTO dto = GuitarDTO.remapFromGuitar(guitar);
@@ -50,7 +58,12 @@ public class GuitarController {
             dto.mediaUrl = links;
             guitarInfos.add(dto);
         }
-        return new ResponseEntity<>(guitarInfos, HttpStatus.OK);
+        response.guitarDTOList = guitarInfos;
+        response.pageCount = guitarService.getAll().size()/pageSize;
+        if (guitarInfos.size()%pageSize != 0)
+            response.pageCount = response.pageCount + 1;
+        response.pageSize = pageSize;
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @GetMapping("/getdetailedinfo")
