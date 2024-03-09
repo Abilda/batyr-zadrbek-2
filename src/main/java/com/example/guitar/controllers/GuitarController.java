@@ -54,15 +54,21 @@ public class GuitarController {
     }
 
     @GetMapping("/getdetailedinfo")
-    public ResponseEntity<Guitar> getDetailedInfo(@PathParam("id")Long id) {
+    public ResponseEntity<GuitarDTO> getDetailedInfo(@PathParam("id")Long id) {
         System.out.println("Id is " + id);
         Guitar guitar = new Guitar();
+        GuitarDTO dto = new GuitarDTO();
         try {
             guitar = guitarService.getById(id);
+            dto = GuitarDTO.remapFromGuitar(guitar);
+            List<String> links = new ArrayList<>();
+            for (MediaUrl mediaUrl : mediaUrlService.getMediasOfGuitar(guitar.id))
+                links.add(mediaUrl.mediaUrl);
+            dto.mediaUrl = links;
         } catch (Exception e) {
             //TODO: add logging
         }
-        return new ResponseEntity<>(guitar, HttpStatus.OK);
+        return new ResponseEntity<>(dto, HttpStatus.OK);
     }
 
     @GetMapping("/getdetailedinfolist")
