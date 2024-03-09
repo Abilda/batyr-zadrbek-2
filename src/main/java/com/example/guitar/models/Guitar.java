@@ -26,6 +26,27 @@ public class Guitar {
     public Double widht;
     public Double height;
     public Double weight;
+
+    public void setLength(Double length) {
+        this.length = length;
+    }
+
+    public void setWidht(Double widht) {
+        this.widht = widht;
+    }
+
+    public void setHeight(Double height) {
+        this.height = height;
+    }
+
+    public void setWeight(Double weight) {
+        this.weight = weight;
+    }
+
+    public void setVolume(Double volume) {
+        this.volume = volume;
+    }
+
     public Double volume;
 
     public Long getId() {

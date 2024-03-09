@@ -3,9 +3,12 @@ package com.example.guitar.controllers;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.example.guitar.dto.GuitarDTO;
 import com.example.guitar.dto.SortDTO;
 import com.example.guitar.models.Guitar;
+import com.example.guitar.models.MediaUrl;
 import com.example.guitar.services.GuitarService;
+import com.example.guitar.services.MediaUrlService;
 import jakarta.websocket.server.PathParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -26,14 +29,28 @@ import org.springframework.web.bind.annotation.RestController;
 public class GuitarController {
     @Autowired
     private GuitarService guitarService;
+    @Autowired
+    private MediaUrlService mediaUrlService;
 
-    public GuitarController(GuitarService guitarService) {
+    public GuitarController(GuitarService guitarService, MediaUrlService mediaUrlService) {
         this.guitarService = guitarService;
+        this.mediaUrlService = mediaUrlService;
     }
 
     @GetMapping("/getall")
-    public ResponseEntity<List<Guitar>> getAll() {
-        return new ResponseEntity<>(guitarService.getAll(), HttpStatus.OK);
+    public ResponseEntity<List<GuitarDTO>> getAll() {
+        List<Guitar> guitars = guitarService.getAll();
+        List<GuitarDTO> guitarInfos = new ArrayList<>();
+        for (Guitar guitar : guitars) {
+            GuitarDTO dto = GuitarDTO.remapFromGuitar(guitar);
+            List<MediaUrl> medias = mediaUrlService.getMediasOfGuitar(guitar.id);
+            List<String > links = new ArrayList<>();
+            for (MediaUrl media : medias)
+                links.add(media.mediaUrl);
+            dto.mediaUrl = links;
+            guitarInfos.add(dto);
+        }
+        return new ResponseEntity<>(guitarInfos, HttpStatus.OK);
     }
 
     @GetMapping("/getdetailedinfo")
@@ -49,18 +66,24 @@ public class GuitarController {
     }
 
     @GetMapping("/getdetailedinfolist")
-    public ResponseEntity<List<Guitar>> getDetailedInfo(@RequestParam List<Long> ids) {
-        List<Guitar> guitars = new ArrayList<>();
+    public ResponseEntity<List<GuitarDTO>> getDetailedInfo(@RequestParam List<Long> ids) {
+        List<GuitarDTO> guitarInfos = new ArrayList<>();
         for (Long id : ids) {
             Guitar guitar = new Guitar();
             try {
                 guitar = guitarService.getById(id);
-                guitars.add(guitar);
+                List<MediaUrl> mediaUrls = mediaUrlService.getMediasOfGuitar(guitar.id);
+                List<String> links = new ArrayList<>();
+                for (MediaUrl media : mediaUrls)
+                    links.add(media.mediaUrl);
+                GuitarDTO dto = GuitarDTO.remapFromGuitar(guitar);
+                dto.mediaUrl = links;
+                guitarInfos.add(dto);
             } catch (Exception e) {
                 //TODO: add logging
             }
         }
-        return new ResponseEntity<>(guitars, HttpStatus.OK);
+        return new ResponseEntity<>(guitarInfos, HttpStatus.OK);
     }
 
     @PostMapping("/sort")
@@ -75,7 +98,27 @@ public class GuitarController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<Guitar> create(@RequestBody Guitar guitar) {
+    public ResponseEntity<Guitar> create(@RequestBody GuitarDTO guitarDTO) {
+        Guitar guitar = new Guitar();
+        guitar.setName(guitarDTO.name);
+        guitar.setBrand(guitarDTO.brand);
+        guitar.setDescription(guitarDTO.description);
+        guitar.setHandedness(guitarDTO.handedness);
+        guitar.setPrice(guitarDTO.price);
+        guitar.setYear(guitarDTO.year);
+        guitar.setType(guitarDTO.type);
+        guitar.setSeller(guitarDTO.seller);
+        guitar.setWidht(guitarDTO.widht);
+        guitar.setWeight(guitar.weight);
+        guitar.setHeight(guitarDTO.height);
+        guitar.setVolume(guitarDTO.volume);
+        Guitar result = guitarService.create(guitar);
+        for (String url : guitarDTO.mediaUrl) {
+            MediaUrl mediaUrl = new MediaUrl();
+            mediaUrl.setMediaUrl(url);
+            mediaUrl.setGuitarId(result.id);
+            mediaUrlService.create(mediaUrl);
+        }
         return new ResponseEntity<>(guitarService.create(guitar), HttpStatus.OK);
     }
 
@@ -94,12 +137,20 @@ public class GuitarController {
     }
 
     @GetMapping("/getall1")
-    public ResponseEntity<List<Guitar>> getall(@PathParam("sort")String sortEnum,
+    public ResponseEntity<List<GuitarDTO>> getall(@PathParam("sort")String sortEnum,
                                                @PathParam("pageSize")Integer pageSize, @PathParam("after")Integer after) {
         pageSize = Math.min(pageSize, guitarService.getAll().size());
         List<Guitar> allGuitars = guitarService.getAll().subList(0, pageSize);
-        System.out.println("Was here");
-        return new ResponseEntity<>(allGuitars, HttpStatus.OK);
+        List<GuitarDTO> guitarDTOS = new ArrayList<>();
+        for (Guitar guitar : allGuitars) {
+            GuitarDTO guitarDTO = GuitarDTO.remapFromGuitar(guitar);
+            List<MediaUrl> mediasOfGuitar = mediaUrlService.getMediasOfGuitar(guitar.id);
+            List<String> medias = new ArrayList<>();
+            for (MediaUrl media : mediasOfGuitar)
+                medias.add(media.getMediaUrl());
+            guitarDTO.setMediaUrl(medias);
+        }
+        return new ResponseEntity<>(guitarDTOS, HttpStatus.OK);
     }
 
     @GetMapping("/getall2")
