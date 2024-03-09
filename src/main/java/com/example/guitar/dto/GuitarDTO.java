@@ -145,6 +145,7 @@ public class GuitarDTO {
 
     public static GuitarDTO remapFromGuitar(Guitar guitar) {
         GuitarDTO dto = new GuitarDTO();
+        dto.setId(guitar.id);
         dto.setName(guitar.name);
         dto.setBrand(guitar.brand);
         dto.setDescription(guitar.description);
